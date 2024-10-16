@@ -138,7 +138,13 @@ class BackgroundGeolocation {
   // Event Subscriptions
   static List<_Subscription> _subscriptions = [];
 
+  // Stream controllers
+  static final StreamController<Location> _locationStreamController =
+      StreamController<Location>.broadcast();
+
   // Stream Listeners
+  static Stream<Location> get eventsLocationStream =>
+      _locationStreamController.stream;
   static Stream<Location>? eventsLocation;
   static Stream<Location>? _eventsMotionChange;
   static Stream<ActivityChangeEvent>? _eventsActivityChange;
@@ -1176,6 +1182,24 @@ class BackgroundGeolocation {
   static void _onLocationError(LocationError error) {
     print(
         '[BackgroundGeolocation onLocation] ‼️ Unhandled location error: $error.\nYou should provide a failure callback as 2nd argument to BackgroundGeolocation.onLocation.\nEg:  BackgroundGeolocation.onLocation(_onLocation, (LocationError error) {\n\t// Handle LocationError here.\n\tprint("[onLocation] ERROR: \$error");\n});');
+  }
+
+  // Stream method for tracking location
+  static void startLocationUpdates() {
+    _eventChannelLocation.receiveBroadcastStream().map((dynamic event) {
+      Location location = Location(event);
+      _locationStreamController.add(location);
+    }).listen(null);
+  }
+
+  // Method for catching tracking location stream
+  static Stream<Location> getLocationStream() {
+    return _locationStreamController.stream;
+  }
+
+  // disposen_locationStreamController
+  static void dispose() {
+    _locationStreamController.close();
   }
 
   /// Subscribe to changes in motion activity.
