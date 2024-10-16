@@ -1188,8 +1188,14 @@ class BackgroundGeolocation {
   static void startLocationUpdates() {
     _eventChannelLocation.receiveBroadcastStream().map((dynamic event) {
       Location location = Location(event);
-      _locationStreamController.add(location);
-    }).listen(null);
+      _locationStreamController.sink.add(location);
+    }).listen(
+      null,
+      onError: (error) {
+        _locationStreamController.addError(error);
+        print("Error in location stream: $error");
+      },
+    );
   }
 
   // Method for catching tracking location stream
