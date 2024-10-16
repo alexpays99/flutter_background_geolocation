@@ -1190,7 +1190,7 @@ class BackgroundGeolocation {
       Location location = Location(event);
       _locationStreamController.sink.add(location);
     }).listen(
-      null,
+      (location) {},
       onError: (error) {
         _locationStreamController.addError(error);
         print("Error in location stream: $error");
@@ -1200,10 +1200,19 @@ class BackgroundGeolocation {
 
   // Method for catching tracking location stream
   static Stream<Location> getLocationStream() {
+    if (!_locationStreamController.hasListener) {
+      BackgroundGeolocation.onLocation(
+        (Location location) {
+          _locationStreamController.add(location);
+        },
+        (error) {
+          _locationStreamController.addError(error);
+        },
+      );
+    }
     return _locationStreamController.stream;
   }
 
-  // disposen_locationStreamController
   static void dispose() {
     _locationStreamController.close();
   }
