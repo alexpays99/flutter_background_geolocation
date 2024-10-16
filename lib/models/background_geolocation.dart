@@ -139,7 +139,7 @@ class BackgroundGeolocation {
   static List<_Subscription> _subscriptions = [];
 
   // Stream Listeners
-  static Stream<Location>? _eventsLocation;
+  static Stream<Location>? eventsLocation;
   static Stream<Location>? _eventsMotionChange;
   static Stream<ActivityChangeEvent>? _eventsActivityChange;
   static Stream<ProviderChangeEvent>? _eventsProviderChange;
@@ -1157,13 +1157,13 @@ class BackgroundGeolocation {
   ///
   static void onLocation(Function(Location) success,
       [Function(LocationError)? failure]) {
-    if (_eventsLocation == null) {
-      _eventsLocation = _eventChannelLocation
+    if (eventsLocation == null) {
+      eventsLocation = _eventChannelLocation
           .receiveBroadcastStream()
           .map((dynamic event) => Location(event));
     }
     _registerSubscription(
-        _eventsLocation!.listen(success, onError: (dynamic error) {
+        eventsLocation!.listen(success, onError: (dynamic error) {
           if (failure != null) {
             failure(LocationError(error));
           } else {
