@@ -1185,36 +1185,27 @@ class BackgroundGeolocation {
   }
 
   // Stream method for tracking location
-  static void startLocationUpdates() {
-    _eventChannelLocation.receiveBroadcastStream().map((dynamic event) {
-      Location location = Location(event);
-      _locationStreamController.sink.add(location);
-    }).listen(
-      (location) {},
-      onError: (error) {
-        _locationStreamController.addError(error);
-        print("Error in location stream: $error");
-      },
-    );
-  }
-
-  // Method for catching tracking location stream
-  static Stream<Location> getLocationStream() {
-    if (!_locationStreamController.hasListener) {
-      BackgroundGeolocation.onLocation(
-        (Location location) {
-          _locationStreamController.add(location);
-        },
-        (error) {
-          _locationStreamController.addError(error);
-        },
-      );
+  static StreamSubscription<Location> onLocationUpdates(
+      Function(Location) success,
+      [Function(LocationError)? failure]) {
+    if (eventsLocation == null) {
+      eventsLocation = _eventChannelLocation
+          .receiveBroadcastStream()
+          .map((dynamic event) => Location(event));
     }
-    return _locationStreamController.stream;
-  }
 
-  static void dispose() {
-    _locationStreamController.close();
+    StreamSubscription<Location> subscription =
+        eventsLocation!.listen(success, onError: (dynamic error) {
+      if (failure != null) {
+        failure(LocationError(error));
+      } else {
+        _onLocationError(LocationError(error));
+      }
+    });
+
+    _registerSubscription(subscription, success);
+
+    return subscription;
   }
 
   /// Subscribe to changes in motion activity.
